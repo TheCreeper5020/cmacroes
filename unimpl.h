@@ -1,7 +1,8 @@
 #ifndef UNIMPL_H
 #define UNIMPL_H
 
-#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define unimplemented() do { \
     fprintf(stderr, "%s(): Function not implemented.\n", __func__);\
