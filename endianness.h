@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
+#ifdef __BYTE_ORDER__
     #define ENDIAN_LITTLE __ORDER_LITTLE_ENDIAN__
     #define ENDIAN_BIG __ORDER_BIG_ENDIAN__
 #else
@@ -14,13 +14,13 @@
 #endif
 
 static inline int cpu_endian(void) {
-    #if defined(__BYTE_ORDER__)
+    #ifdef __BYTE_ORDER__
         return __BYTE_ORDER__;
     #else
         uint32_t x = 0x11223344;
         unsigned char *p = (unsigned char*)(&x);
         return p[0] == 0x44 ? ENDIAN_LITTLE : ENDIAN_BIG;
-    #endif
+    #endif // defined(__BYTE_ORDER__)
 }
 
 static inline uint16_t byte_reverse_16(uint16_t x) {
@@ -29,7 +29,7 @@ static inline uint16_t byte_reverse_16(uint16_t x) {
 #else
     return ((x & 0x00FF) << 8)
         |  ((x & 0xFF00) >> 8);
-#endif
+#endif // defined(__GNUC__) || defined(__clang__)
 }
 
 static inline uint32_t byte_reverse_32(uint32_t x) {
@@ -40,7 +40,7 @@ static inline uint32_t byte_reverse_32(uint32_t x) {
         |  ((x & 0x0000FF00) <<  8)
         |  ((x & 0x00FF0000) >>  8)
         |  ((x & 0xFF000000) >> 24);
-#endif
+#endif // defined(__GNUC__) || defined(__clang__)
 }
 
 static inline uint64_t byte_reverse_64(uint64_t x) {
@@ -55,7 +55,7 @@ static inline uint64_t byte_reverse_64(uint64_t x) {
         |  ((x & 0x0000FF0000000000) >> 24)
         |  ((x & 0x00FF000000000000) >> 40)
         |  ((x & 0xFF00000000000000) >> 56);
-#endif
+#endif // defined(__GNUC__) || defined(__clang__)
 }
 
 static inline uintmax_t byte_reverse_max(uintmax_t x, size_t byte_count) {
@@ -81,16 +81,36 @@ static inline uintmax_t byte_reverse_max(uintmax_t x, size_t byte_count) {
     }
 }
 
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
 #define byte_reverse(x) \
-    _Generic((x), \
+    (typeof_unqual(x))(_Generic((x), \
         uint8_t: (x), \
         uint16_t: byte_reverse_16(x), \
         uint32_t: byte_reverse_32(x), \
         uint64_t: byte_reverse_64(x), \
         default: byte_reverse_max(x, sizeof(x)) \
-    )
+    ))
+#else
+#define byte_reverse(x) (_Generic((x), \
+        uint8_t: (x), \
+        uint16_t: byte_reverse_16(x), \
+        uint32_t: byte_reverse_32(x), \
+        uint64_t: byte_reverse_64(x), \
+        default: byte_reverse_max(x, sizeof(x)) \
+    ))
+#endif
 
+#if defined(__BYTE_ORDER__)
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#define big_to_native(x) (x)
+#define little_to_native(x) (byte_reverse(x))
+#else
+#define big_to_native(x) (byte_reverse(x))
+#define little_to_native(x) (x)
+#endif // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#else
 #define big_to_native(x) (cpu_endian() == ENDIAN_BIG ? (x) : byte_reverse(x))
 #define little_to_native(x) (cpu_endian() == ENDIAN_LITTLE ? (x) : byte_reverse(x))
+#endif // defined(__BYTE_ORDER__)
 
-#endif
+#endif // defined(ENDIANNESS_H)
