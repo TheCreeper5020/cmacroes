@@ -100,17 +100,25 @@ static inline uintmax_t byte_reverse_max(uintmax_t x, size_t byte_count) {
     ))
 #endif
 
-#if defined(__BYTE_ORDER__)
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define big_to_native(x) (x)
-#define little_to_native(x) (byte_reverse(x))
+#ifdef __BYTE_ORDER__
+# if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#  define big_to_native(x) (x)
+#  define little_to_native(x) (byte_reverse(x))
+#  define native_to_big(x) (x)
+#  define native_to_little(x) (byte_reverse(x))
+# elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#  define big_to_native(x) (byte_reverse(x))
+#  define little_to_native(x) (x)
+#  define native_to_big(x) (byte_reverse(x))
+#  define native_to_little(x) (x)
+# else
+#  error "Unsupported byte order"
+# endif // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #else
-#define big_to_native(x) (byte_reverse(x))
-#define little_to_native(x) (x)
-#endif // __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#else
-#define big_to_native(x) (cpu_endian() == ENDIAN_BIG ? (x) : byte_reverse(x))
-#define little_to_native(x) (cpu_endian() == ENDIAN_LITTLE ? (x) : byte_reverse(x))
+# define big_to_native(x) (cpu_endian() == ENDIAN_BIG ? (x) : byte_reverse(x))
+# define little_to_native(x) (cpu_endian() == ENDIAN_LITTLE ? (x) : byte_reverse(x))
+# define native_to_big(x) (cpu_endian() == ENDIAN_BIG ? (x) : byte_reverse(x))
+# define native_to_little(x) (cpu_endian() == ENDIAN_LITTLE ? (x) : byte_reverse(x))
 #endif // defined(__BYTE_ORDER__)
 
 #endif // defined(ENDIANNESS_H)
