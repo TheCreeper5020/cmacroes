@@ -1,5 +1,5 @@
-#ifndef ERR_ABORT_H
-#define ERR_ABORT_H
+#ifndef ERROR_HANDLING_H
+#define ERROR_HANDLING_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +29,7 @@ static inline void err_exit_fmt(int code, const char *const errfmt, ...) {
     va_list args;
     va_start(args, errfmt);
     vfprintf(stderr, errfmt, args);
+    va_end(args);
     exit(code);
 }
 
@@ -36,6 +37,7 @@ static inline void ferr_exit_fmt(int code, FILE *file, const char *const errfmt,
     va_list args;
     va_start(args, errfmt);
     vfprintf(file, errfmt, args);
+    va_end(args);
     exit(code);
 }
 
@@ -43,6 +45,7 @@ static inline void err_abort_fmt(const char *const errfmt, ...) {
     va_list args;
     va_start(args, errfmt);
     vfprintf(stderr, errfmt, args);
+    va_end(args);
     abort();
 }
 
@@ -50,6 +53,7 @@ static inline void ferr_abort_fmt(FILE *file, const char *const errfmt, ...) {
     va_list args;
     va_start(args, errfmt);
     vfprintf(file, errfmt, args);
+    va_end(args);
     abort();
 }
 
