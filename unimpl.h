@@ -10,8 +10,8 @@
 } while (0)
 
 #define todo() do {\
-    fprintf(stderr, "TODO hit on line %d in function %s() in file %s", __LINE__, __func__, __FILE__);\
+    fprintf(stderr, "TODO! (line %d in function %s() in file %s)\n", __LINE__, __func__, __FILE__);\
     abort();\
-} while (0);
+} while (0)
 
 #endif
