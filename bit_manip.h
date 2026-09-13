@@ -59,7 +59,7 @@ static inline size_t bit_flip_range(unsigned char *bitset, size_t start, size_t 
     return num_flipped;
 }
 
-static inline size_t popcnt(unsigned char *bitset, size_t size) {
+static inline size_t popcnt(const unsigned char *bitset, size_t size) {
     size_t count = 0;
     for (size_t i = 0; i < BIT_COUNT(size); i++) {
         count += bit_get(bitset, i);
